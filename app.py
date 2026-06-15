@@ -1,5 +1,10 @@
 import streamlit as st
-import requests
+import joblib
+import pandas as pd
+
+model = joblib.load("best_model.pkl")
+label_encoder = joblib.load("label_encoder.pkl")
+preprocessor = joblib.load("preprocessor.pkl")
 
 st.title("Credit Score Prediction")
 
@@ -32,7 +37,8 @@ Payment_Behaviour = st.text_input("Payment Behaviour", value="Low_spent_Small_va
 Monthly_Balance = st.number_input("Monthly Balance", value=300.0)
 
 if st.button("Predict"):
-    df = {
+
+    data = {
         "Age": Age,
         "Occupation": Occupation,
         "Annual_Income": Annual_Income,
@@ -56,8 +62,9 @@ if st.button("Predict"):
         "Monthly_Balance": Monthly_Balance
     }
 
-    response = requests.post("http://127.0.0.1:8000/predict", json=df)
+    df = pd.DataFrame([data])
 
-    result = response.json()
+    pred = model.predict(df)[0]
+    result = label_encoder.inverse_transform([pred])[0]
 
-    st.success(f"Prediction: {result['credit_score_prediction']}")
+    st.success(f"Prediction: {result}")
